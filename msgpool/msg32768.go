@@ -22,3 +22,10 @@ func (msg *msg32768) Close() error {
 	msg.pool.Put(msg)
 	return nil
 }
+
+func (msg *msg32768) clear() {
+	b := msg.Bytes()
+	for i := range b {
+		b[i] = 0
+	}
+}
