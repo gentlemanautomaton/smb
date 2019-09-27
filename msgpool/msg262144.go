@@ -15,7 +15,7 @@ func (msg *msg262144) Length() int {
 }
 
 func (msg *msg262144) Bytes() []byte {
-	return msg.data[0:msg.length]
+	return msg.data[0:msg.length:msg.length]
 }
 
 func (msg *msg262144) Close() error {
