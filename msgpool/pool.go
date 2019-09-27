@@ -18,13 +18,15 @@ type Pool struct {
 
 // New returns an SMB message pool that is ready for use.
 func New() *Pool {
-	return &Pool{
-		p64:     sync.Pool{New: func() interface{} { return new(msg64) }},
-		p512:    sync.Pool{New: func() interface{} { return new(msg512) }},
-		p4096:   sync.Pool{New: func() interface{} { return new(msg4096) }},
-		p32768:  sync.Pool{New: func() interface{} { return new(msg32768) }},
-		p262144: sync.Pool{New: func() interface{} { return new(msg262144) }},
+	var p Pool
+	p = Pool{
+		p64:     sync.Pool{New: func() interface{} { return &msg64{pool: &p.p64} }},
+		p512:    sync.Pool{New: func() interface{} { return &msg512{pool: &p.p512} }},
+		p4096:   sync.Pool{New: func() interface{} { return &msg4096{pool: &p.p4096} }},
+		p32768:  sync.Pool{New: func() interface{} { return &msg32768{pool: &p.p32768} }},
+		p262144: sync.Pool{New: func() interface{} { return &msg262144{pool: &p.p262144} }},
 	}
+	return &p
 }
 
 // Get returns a message of appropriate length from the pool with its bytes
