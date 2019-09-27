@@ -3,7 +3,7 @@ package smbcommand
 import "strconv"
 
 // Code represents an SMB command code.
-type Code uint32
+type Code uint16
 
 // SMB command codes.
 const (
