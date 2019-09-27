@@ -40,6 +40,7 @@ func (c Conn) Receive() (smb.Message, error) {
 	}
 	msg := c.msgPool.Get(hdr.Length())
 	if _, err := io.ReadAtLeast(c.nc, msg.Bytes(), msg.Length()); err != nil {
+		msg.Close()
 		return nil, err
 	}
 	return msg, nil
