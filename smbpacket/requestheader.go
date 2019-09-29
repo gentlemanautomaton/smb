@@ -2,7 +2,6 @@ package smbpacket
 
 import (
 	"encoding/binary"
-	"fmt"
 
 	"github.com/gentlemanautomaton/smb/smbcommand"
 )
@@ -17,11 +16,9 @@ type RequestHeader []byte
 // Valid returns true if the header is valid.
 func (h RequestHeader) Valid() bool {
 	if len(h) < 64 {
-		fmt.Printf("too short\n")
 		return false
 	}
 	if h[0] != 0xFE || h[1] != 'S' || h[2] != 'M' || h[3] != 'B' {
-		fmt.Printf("wrong proto: %d\n", h.Protocol())
 		return false
 	}
 
