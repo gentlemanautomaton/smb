@@ -12,7 +12,7 @@ type Server struct {
 	handler Handler
 }
 
-// New retursn
+// New returns a new SMB server with message handler h.
 func New(h Handler) *Server {
 	return &Server{
 		handler: h,
@@ -44,6 +44,7 @@ func (s Server) Serve(l smb.Listener) error {
 }
 
 func (s Server) serve(conn smb.Conn) {
+	defer conn.Close()
 	s.handler.ServeSMB(conn)
 }
 
