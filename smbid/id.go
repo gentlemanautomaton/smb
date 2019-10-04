@@ -32,6 +32,8 @@ func New() (id ID, err error) {
 //
 // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/001eec5a-7f8b-4293-9e21-ca349392db40
 func (id *ID) Read(v []byte) {
+	_ = v[15] // bounds check hint to compiler; see golang.org/issue/14808
+
 	// Data1: uint32
 	id[3] = v[0]
 	id[2] = v[1]
@@ -62,6 +64,8 @@ func (id *ID) Read(v []byte) {
 //
 // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/001eec5a-7f8b-4293-9e21-ca349392db40
 func (id ID) Write(v []byte) {
+	_ = v[15] // Early bounds check to guarantee safety of writes below
+
 	// Data1: uint32
 	v[0] = id[3]
 	v[1] = id[2]
