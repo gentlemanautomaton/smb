@@ -30,7 +30,7 @@ Performance Goals
 3. Minimize memory allocation and garbage collection.
 4. Avoid the reflect package.
 
-Feature goals
+Feature Goals
 ----
 
 1. Support SMB version 3.1.1.
@@ -97,10 +97,29 @@ func handle(msg smb.Message) {
 }
 ```
 
+Byte ordering is handled by the accessors for each type:
+
+```Go
+package smbpacket
+
+// RequestHeader interprets a slice of bytes as an SMB request packet header.
+type RequestHeader []byte
+
+// ...
+
+// Protocol returns the protocol ID of the packet.
+func (h RequestHeader) Protocol() uint32 {
+	return binary.LittleEndian.Uint32(h[0:4])
+}
+
+// Size returns the structure size of the header.
+func (h RequestHeader) Size() uint16 {
+	return binary.LittleEndian.Uint16(h[4:6])
+}
+```
+
 This approach has several benefits:
 
 1. Go performs slice boundary checks as necessary, increasing safety.
 2. Messages can be interpreted without allocating data on the heap, improving performance.
 3. Message fields are interpreted lazily, improving performance.
-
-Byte ordering is handled by the accessors for each type.
