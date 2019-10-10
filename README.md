@@ -75,7 +75,7 @@ func (r Request) Header() RequestHeader {
 }
 ```
 
-This library relies on typed slices extensively to interpret buffered
+This library relies on typed byte slices extensively to interpret buffered
 messages:
 
 ```Go
@@ -97,7 +97,7 @@ func handle(msg smb.Message) {
 }
 ```
 
-Byte ordering is handled by the accessors for each type:
+Byte ordering is handled by the accessors for each byte slice:
 
 ```Go
 package smbpacket
@@ -107,14 +107,9 @@ type RequestHeader []byte
 
 // ...
 
-// Protocol returns the protocol ID of the packet.
-func (h RequestHeader) Protocol() uint32 {
-	return binary.LittleEndian.Uint32(h[0:4])
-}
-
-// Size returns the structure size of the header.
-func (h RequestHeader) Size() uint16 {
-	return binary.LittleEndian.Uint16(h[4:6])
+// Command returns the command code of the request.
+func (h RequestHeader) Command() smbcommand.Code {
+	return smbcommand.Code(binary.LittleEndian.Uint16(h[12:14]))
 }
 ```
 
