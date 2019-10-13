@@ -11,7 +11,7 @@ import (
 	"github.com/gentlemanautomaton/smb/smbtype"
 )
 
-// Response interprets a slice of bytes as an SMB negotiate response packet.
+// Response interprets a slice of bytes as an SMB negotiation response packet.
 //
 // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/63abf97c-0d09-47e2-88d6-6bfa552949a5
 type Response []byte
@@ -22,7 +22,7 @@ func (r Response) Valid() bool {
 		return false
 	}
 
-	// The spec requires the size field to be 65.
+	// The spec requires the size field to be 65
 	if r.Size() != 65 {
 		return false
 	}
@@ -32,11 +32,17 @@ func (r Response) Valid() bool {
 		return false
 	}
 
-	// In SMB 3.1.1 the negotiate context must not overflow
+	// In SMB 3.1.1 the negotiation contexts must not overflow
 	if r.DialectRevision() == smbdialect.SMB311 {
-		start := int(r.NegotiateContextOffset())
-		end := start + int(r.NegotiateContextCount())*8 // The size is variable but at least 8 bytes
-		if end > len(r) {
+		// Make sure the context count is compatible with the size of the
+		// response. The size of each context is variable but at least 8 bytes.
+		minimumLength := uint(r.ContextOffset()) + uint(r.ContextCount())*ContextHeaderLength
+		if minimumLength > uint(len(r)) {
+			return false
+		}
+
+		// Rely on the context list implementation to determine its own validity
+		if !r.ContextList().Valid(r.ContextCount()) {
 			return false
 		}
 	}
@@ -76,17 +82,17 @@ func (r Response) SetDialectRevision(revision smbdialect.Revision) {
 	binary.LittleEndian.PutUint16(r[4:6], uint16(revision))
 }
 
-// NegotiateContextCount returns the context count of the response.
+// ContextCount returns the context count of the response.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
-func (r Response) NegotiateContextCount() uint16 {
+func (r Response) ContextCount() uint16 {
 	return binary.LittleEndian.Uint16(r[6:8])
 }
 
-// SetNegotiateContextCount sets the context count of the response.
+// SetContextCount sets the context count of the response.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
-func (r Response) SetNegotiateContextCount(size uint16) {
+func (r Response) SetContextCount(size uint16) {
 	binary.LittleEndian.PutUint16(r[6:8], size)
 }
 
@@ -193,28 +199,27 @@ func (r Response) SecurityBuffer() []byte {
 	return r[start:end:end]
 }
 
-// NegotiateContextOffset returns the offset of the first negotiate context
+// ContextOffset returns the offset of the first negotiate context
 // within the response.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
-func (r Response) NegotiateContextOffset() uint32 {
+func (r Response) ContextOffset() uint32 {
 	return binary.LittleEndian.Uint32(r[60:64])
 }
 
-// SetNegotiateContextOffset sets the offset of the first negotiate context
+// SetContextOffset sets the offset of the first negotiate context
 // within the response.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
-func (r Response) SetNegotiateContextOffset(size uint32) {
+func (r Response) SetContextOffset(size uint32) {
 	binary.LittleEndian.PutUint32(r[60:64], size)
 }
 
-// NegotiateContext returns the bytes of the negotiate context list from the
-// response.
+// ContextList returns the negotiation context list from the response.
 //
-// TODO: Return the context list as a strongly typed slice.
+// If r is valid the returned list is guaranteed to be valid.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
-func (r Response) NegotiateContext() []byte {
-	return r[r.NegotiateContextOffset():]
+func (r Response) ContextList() ContextList {
+	return ContextList(r[r.ContextOffset():])
 }

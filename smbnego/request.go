@@ -9,7 +9,7 @@ import (
 	"github.com/gentlemanautomaton/smb/smbsecmode"
 )
 
-// Request interprets a slice of bytes as an SMB negotiate request packet.
+// Request interprets a slice of bytes as an SMB negotiation request packet.
 //
 // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/e14db7ff-763a-4263-8b10-0c3944f52fc5
 type Request []byte
@@ -20,7 +20,7 @@ func (r Request) Valid() bool {
 		return false
 	}
 
-	// The spec requires the size field to be 65.
+	// The spec requires the size field to be 36
 	if r.Size() != 36 {
 		return false
 	}
@@ -42,11 +42,17 @@ func (r Request) Valid() bool {
 		return false
 	}
 
-	// In SMB 3.1.1 the negotiate context must not overflow
+	// In SMB 3.1.1 the negotiation contexts must not overflow
 	if r.Dialects().Contains(smbdialect.SMB311) {
-		start := int(r.NegotiateContextOffset())
-		end := start + int(r.NegotiateContextCount())*8 // The size is variable but at least 8 bytes
-		if end > len(r) {
+		// Make sure the context count is compatible with the size of the
+		// request. The size of each context is variable but at least 8 bytes.
+		minimumLength := uint(r.ContextOffset()) + uint(r.ContextCount())*ContextHeaderLength
+		if minimumLength > uint(len(r)) {
+			return false
+		}
+
+		// Rely on the context list implementation to determine its own validity
+		if !r.ContextList().Valid(r.ContextCount()) {
 			return false
 		}
 	}
@@ -107,34 +113,34 @@ func (r Request) SetClientID(id smbid.ID) {
 	id.Write(r[12:28])
 }
 
-// NegotiateContextOffset returns the offset of the first negotiate context
-// within the request.
+// ContextOffset returns the offset of the first negotiation context in the
+// request.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
-func (r Request) NegotiateContextOffset() uint32 {
+func (r Request) ContextOffset() uint32 {
 	return binary.LittleEndian.Uint32(r[28:32])
 }
 
-// SetNegotiateContextOffset sets the offset of the first negotiate context
-// within the request.
+// SetContextOffset sets the offset of the first negotiation context in the
+// request.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
-func (r Request) SetNegotiateContextOffset(size uint32) {
+func (r Request) SetContextOffset(size uint32) {
 	binary.LittleEndian.PutUint32(r[28:32], size)
 }
 
-// NegotiateContextCount returns the context count of the request.
+// ContextCount returns the negotiation context count of the request.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
-func (r Request) NegotiateContextCount() uint16 {
+func (r Request) ContextCount() uint16 {
 	return binary.LittleEndian.Uint16(r[32:34])
 }
 
-// SetNegotiateContextCount sets the context count of the request.
+// SetContextCount sets the negotiation context count of the request.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
-func (r Request) SetNegotiateContextCount(size uint16) {
-	binary.LittleEndian.PutUint16(r[32:34], size)
+func (r Request) SetContextCount(count uint16) {
+	binary.LittleEndian.PutUint16(r[32:34], count)
 }
 
 // Dialects returns the dialect list from the request.
@@ -144,12 +150,11 @@ func (r Request) Dialects() smbdialect.List {
 	return smbdialect.List(r[start:end:end])
 }
 
-// NegotiateContext returns the bytes of the negotiate context list from the
-// request.
+// ContextList returns the negotiation context list from the request.
 //
-// TODO: Return the context list as a strongly typed slice.
+// If r is valid the returned list is guaranteed to be valid.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
-func (r Request) NegotiateContext() []byte {
-	return r[r.NegotiateContextOffset():]
+func (r Request) ContextList() ContextList {
+	return ContextList(r[r.ContextOffset():])
 }
