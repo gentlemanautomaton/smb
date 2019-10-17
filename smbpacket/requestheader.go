@@ -9,6 +9,7 @@ import (
 // RequestHeader interprets a slice of bytes as an SMB request packet header.
 //
 // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/fb188936-5050-48d3-b350-dc43059638a4
+//
 // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/ea4560b7-90da-4803-82b5-344754b92a79
 type RequestHeader []byte
 

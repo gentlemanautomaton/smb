@@ -5,6 +5,7 @@ import "strings"
 // Flags declares a set of processing flags for an SMB packet.
 type Flags uint32
 
+// SMB packet processing flags.
 const (
 	// ServerToClient indicates that the packet is a response from the server.
 	ServerToClient = 0x00000001 // SMB2_FLAGS_SERVER_TO_REDIR
