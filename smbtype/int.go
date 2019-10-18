@@ -6,7 +6,7 @@ func Uint16(b []byte) uint16 {
 	return uint16(b[0]) | uint16(b[1])<<8
 }
 
-// PutUint16 writes a uint16 as a slice of 4 bytes in little-endian byte
+// PutUint16 writes a uint16 as a slice of 2 bytes in little-endian byte
 // order.
 func PutUint16(b []byte, v uint16) {
 	b[0], b[1] = byte(v), byte(v>>8)
