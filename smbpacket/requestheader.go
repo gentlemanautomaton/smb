@@ -1,9 +1,8 @@
 package smbpacket
 
 import (
-	"encoding/binary"
-
 	"github.com/gentlemanautomaton/smb/smbcommand"
+	"github.com/gentlemanautomaton/smb/smbtype"
 )
 
 // RequestHeader interprets a slice of bytes as an SMB request packet header.
@@ -37,12 +36,12 @@ func (h RequestHeader) SetProtocol(p Protocol) {
 
 // Size returns the structure size of the header.
 func (h RequestHeader) Size() uint16 {
-	return binary.LittleEndian.Uint16(h[4:6])
+	return smbtype.Uint16(h[4:6])
 }
 
 // SetSize sets the structure size of the header.
 func (h RequestHeader) SetSize(size uint16) {
-	binary.LittleEndian.PutUint16(h[4:6], size)
+	smbtype.PutUint16(h[4:6], size)
 }
 
 // CreditCharge returns the credit charge of the request. This represents
@@ -51,7 +50,7 @@ func (h RequestHeader) SetSize(size uint16) {
 // This field is not valid in the SMB 2.0.2 dialect. It is valid in all other
 // dialects.
 func (h RequestHeader) CreditCharge() uint16 {
-	return binary.LittleEndian.Uint16(h[6:8])
+	return smbtype.Uint16(h[6:8])
 }
 
 // SetCreditCharge sets the credit charge of the request. This represents
@@ -60,7 +59,7 @@ func (h RequestHeader) CreditCharge() uint16 {
 // This field is not valid in the SMB 2.0.2 dialect. It is valid in all other
 // dialects.
 func (h RequestHeader) SetCreditCharge(charge uint16) {
-	binary.LittleEndian.PutUint16(h[6:8], charge)
+	smbtype.PutUint16(h[6:8], charge)
 }
 
 // ChannelSequence returns the channel sequence of the request. It indicates
@@ -68,7 +67,7 @@ func (h RequestHeader) SetCreditCharge(charge uint16) {
 //
 // This field is only valid in the SMB 3.x dialects.
 func (h RequestHeader) ChannelSequence() uint16 {
-	return binary.LittleEndian.Uint16(h[8:10])
+	return smbtype.Uint16(h[8:10])
 }
 
 // SetChannelSequence sets the channel sequence of the request. It indicates
@@ -76,104 +75,104 @@ func (h RequestHeader) ChannelSequence() uint16 {
 //
 // This field is only valid in the SMB 3.x dialects.
 func (h RequestHeader) SetChannelSequence(sequence uint16) {
-	binary.LittleEndian.PutUint16(h[8:10], sequence)
+	smbtype.PutUint16(h[8:10], sequence)
 }
 
 // Status returns the status from the request.
 //
 // This field is only valid in the SMB 2.0.2 and 2.1 dialects. It must be 0.
 func (h RequestHeader) Status() uint32 {
-	return binary.LittleEndian.Uint32(h[8:12])
+	return smbtype.Uint32(h[8:12])
 }
 
 // Command returns the command code of the request.
 func (h RequestHeader) Command() smbcommand.Code {
-	return smbcommand.Code(binary.LittleEndian.Uint16(h[12:14]))
+	return smbcommand.Code(smbtype.Uint16(h[12:14]))
 }
 
 // SetCommand sets the command code of the request.
 func (h RequestHeader) SetCommand(command smbcommand.Code) {
-	binary.LittleEndian.PutUint16(h[12:14], uint16(command))
+	smbtype.PutUint16(h[12:14], uint16(command))
 }
 
 // CreditRequest returns the number of credits requested in the request.
 func (h RequestHeader) CreditRequest() uint16 {
-	return binary.LittleEndian.Uint16(h[14:16])
+	return smbtype.Uint16(h[14:16])
 }
 
 // SetCreditRequest sets the number of credits requested in the request.
 func (h RequestHeader) SetCreditRequest(credits uint16) {
-	binary.LittleEndian.PutUint16(h[14:16], credits)
+	smbtype.PutUint16(h[14:16], credits)
 }
 
 // Flags returns the processing flags for the request.
 func (h RequestHeader) Flags() Flags {
-	return Flags(binary.LittleEndian.Uint32(h[16:20]))
+	return Flags(smbtype.Uint32(h[16:20]))
 }
 
 // SetFlags sets the processing flags for the request.
 func (h RequestHeader) SetFlags(f Flags) {
-	binary.LittleEndian.PutUint32(h[16:20], uint32(f))
+	smbtype.PutUint32(h[16:20], uint32(f))
 }
 
 // NextCommand returns the byte offset of the next request in the message, if
 // there is one. Returns zero if there are no more requests. The offset is
 // relative to the start of h.
 func (h RequestHeader) NextCommand() uint32 {
-	return binary.LittleEndian.Uint32(h[20:24])
+	return smbtype.Uint32(h[20:24])
 }
 
 // SetNextCommand sets the byte offset of the next request in the message.
 func (h RequestHeader) SetNextCommand(offset uint32) {
-	binary.LittleEndian.PutUint32(h[20:24], offset)
+	smbtype.PutUint32(h[20:24], offset)
 }
 
 // MessageID returns the message ID of the request.
 func (h RequestHeader) MessageID() uint64 {
-	return binary.LittleEndian.Uint64(h[24:32])
+	return smbtype.Uint64(h[24:32])
 }
 
 // SetMessageID sets the message ID of the request.
 func (h RequestHeader) SetMessageID(message uint64) {
-	binary.LittleEndian.PutUint64(h[24:32], message)
+	smbtype.PutUint64(h[24:32], message)
 }
 
 // TreeID returns the tree ID of the request.
 //
 // This field is only valid for synchronous requests.
 func (h RequestHeader) TreeID() uint32 {
-	return binary.LittleEndian.Uint32(h[36:40])
+	return smbtype.Uint32(h[36:40])
 }
 
 // SetTreeID sets the tree ID of the request.
 //
 // This field is only valid for synchronous requests.
 func (h RequestHeader) SetTreeID(tree uint32) {
-	binary.LittleEndian.PutUint32(h[36:40], tree)
+	smbtype.PutUint32(h[36:40], tree)
 }
 
 // AsyncID returns the asynchronous ID of the request.
 //
 // This field is only valid for asynchronous requests.
 func (h RequestHeader) AsyncID() uint64 {
-	return binary.LittleEndian.Uint64(h[32:40])
+	return smbtype.Uint64(h[32:40])
 }
 
 // SetAsyncID sets the asynchronous ID of the request.
 //
 // This field is only valid for asynchronous requests.
 func (h RequestHeader) SetAsyncID(async uint64) {
-	binary.LittleEndian.PutUint64(h[32:40], async)
+	smbtype.PutUint64(h[32:40], async)
 }
 
 // SessionID returns the session ID of the request.
 func (h RequestHeader) SessionID() uint64 {
-	return binary.LittleEndian.Uint64(h[40:48])
+	return smbtype.Uint64(h[40:48])
 }
 
 // SetSessionID sets the session ID of the request.
 func (h RequestHeader) SetSessionID(tree uint32) {
-	binary.LittleEndian.PutUint32(h[40:48], tree)
+	smbtype.PutUint32(h[40:48], tree)
 }
 
 // Signature returns the cryptographic signature of the request.

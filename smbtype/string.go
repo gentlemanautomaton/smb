@@ -1,7 +1,6 @@
 package smbtype
 
 import (
-	"encoding/binary"
 	"unicode/utf16"
 	"unicode/utf8"
 )
@@ -71,12 +70,12 @@ func utf8Len(b []byte) (length int) {
 }
 
 func nextRune(b []byte) (consumed int, r rune) {
-	switch r1 := binary.LittleEndian.Uint16(b); {
+	switch r1 := Uint16(b); {
 	case isNormalRune(r1):
 		return 2, rune(r1)
 	case isSurrogateHigh(r1) && 3 < len(b):
 		// Surrogate sequence
-		if r2 := binary.LittleEndian.Uint16(b[2:]); isSurrogateLow(r2) {
+		if r2 := Uint16(b[2:]); isSurrogateLow(r2) {
 			return 4, utf16.DecodeRune(rune(r1), rune(r2))
 		}
 		fallthrough

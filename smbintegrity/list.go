@@ -1,6 +1,6 @@
 package smbintegrity
 
-import "encoding/binary"
+import "github.com/gentlemanautomaton/smb/smbtype"
 
 // List interprets a slice of bytes as an SMB hash algorithm list.
 type List []byte
@@ -13,7 +13,7 @@ func (k List) Count() int {
 // Member returns the list member at position i.
 func (k List) Member(i int) Algorithm {
 	i *= 2
-	return Algorithm(binary.LittleEndian.Uint16(k[i : i+2]))
+	return Algorithm(smbtype.Uint16(k[i : i+2]))
 }
 
 // Contains returns true if the list contains a.

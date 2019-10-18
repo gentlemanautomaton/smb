@@ -1,8 +1,7 @@
 package smbnego
 
 import (
-	"encoding/binary"
-
+	"github.com/gentlemanautomaton/smb/smbtype"
 	"github.com/gentlemanautomaton/smb/smbcompression"
 	"github.com/gentlemanautomaton/smb/smbencryption"
 	"github.com/gentlemanautomaton/smb/smbintegrity"
@@ -20,12 +19,12 @@ type Context []byte
 
 // Type returns the type of the context.
 func (c Context) Type() ContextType {
-	return ContextType(binary.LittleEndian.Uint16(c[0:2]))
+	return ContextType(smbtype.Uint16(c[0:2]))
 }
 
 // Length returns the length of the context data in bytes.
 func (c Context) Length() uint16 {
-	return binary.LittleEndian.Uint16(c[2:4])
+	return smbtype.Uint16(c[2:4])
 }
 
 // Data returns the context's data as a slice of bytes.

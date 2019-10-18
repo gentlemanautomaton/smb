@@ -1,7 +1,6 @@
 package smbnego
 
 import (
-	"encoding/binary"
 	"time"
 
 	"github.com/gentlemanautomaton/smb/smbcap"
@@ -54,46 +53,46 @@ func (r Response) Valid() bool {
 // that this be 65, regardless of the size of the security buffer or the
 // number of negotiation contexts.
 func (r Response) Size() uint16 {
-	return binary.LittleEndian.Uint16(r[0:2])
+	return smbtype.Uint16(r[0:2])
 }
 
 // SetSize sets the structure size of the response.
 func (r Response) SetSize(size uint16) {
-	binary.LittleEndian.PutUint16(r[0:2], size)
+	smbtype.PutUint16(r[0:2], size)
 }
 
 // SecurityMode returns the security mode of the response.
 func (r Response) SecurityMode() smbsecmode.Flags {
-	return smbsecmode.Flags(binary.LittleEndian.Uint16(r[2:4]))
+	return smbsecmode.Flags(smbtype.Uint16(r[2:4]))
 }
 
 // SetSecurityMode sets the security mode of the response.
 func (r Response) SetSecurityMode(flags smbsecmode.Flags) {
-	binary.LittleEndian.PutUint16(r[2:4], uint16(flags))
+	smbtype.PutUint16(r[2:4], uint16(flags))
 }
 
 // DialectRevision returns the dialect revision of the response.
 func (r Response) DialectRevision() smbdialect.Revision {
-	return smbdialect.Revision(binary.LittleEndian.Uint16(r[4:6]))
+	return smbdialect.Revision(smbtype.Uint16(r[4:6]))
 }
 
 // SetDialectRevision sets the dialect revision of the response.
 func (r Response) SetDialectRevision(revision smbdialect.Revision) {
-	binary.LittleEndian.PutUint16(r[4:6], uint16(revision))
+	smbtype.PutUint16(r[4:6], uint16(revision))
 }
 
 // ContextCount returns the context count of the response.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
 func (r Response) ContextCount() uint16 {
-	return binary.LittleEndian.Uint16(r[6:8])
+	return smbtype.Uint16(r[6:8])
 }
 
 // SetContextCount sets the context count of the response.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
 func (r Response) SetContextCount(size uint16) {
-	binary.LittleEndian.PutUint16(r[6:8], size)
+	smbtype.PutUint16(r[6:8], size)
 }
 
 // ServerID returns the server identifier of the response.
@@ -109,42 +108,42 @@ func (r Response) SetServerID(id smbid.ID) {
 
 // Capabilities returns the capability flags of the response.
 func (r Response) Capabilities() smbcap.Flags {
-	return smbcap.Flags(binary.LittleEndian.Uint32(r[24:28]))
+	return smbcap.Flags(smbtype.Uint32(r[24:28]))
 }
 
 // SetCapabilities sets the capability flags of the response.
 func (r Response) SetCapabilities(flags smbcap.Flags) {
-	binary.LittleEndian.PutUint32(r[24:28], uint32(flags))
+	smbtype.PutUint32(r[24:28], uint32(flags))
 }
 
 // MaxTransactSize returns the maximum transaction size of the response.
 func (r Response) MaxTransactSize() uint32 {
-	return binary.LittleEndian.Uint32(r[28:32])
+	return smbtype.Uint32(r[28:32])
 }
 
 // SetMaxTransactSize sets the maximum transaction size of the response.
 func (r Response) SetMaxTransactSize(flags uint32) {
-	binary.LittleEndian.PutUint32(r[28:32], flags)
+	smbtype.PutUint32(r[28:32], flags)
 }
 
 // MaxReadSize returns the maximum read size of the response.
 func (r Response) MaxReadSize() uint32 {
-	return binary.LittleEndian.Uint32(r[32:36])
+	return smbtype.Uint32(r[32:36])
 }
 
 // SetMaxReadSize sets the maximum read size of the response.
 func (r Response) SetMaxReadSize(flags uint32) {
-	binary.LittleEndian.PutUint32(r[32:36], flags)
+	smbtype.PutUint32(r[32:36], flags)
 }
 
 // MaxWriteSize returns the maximum write size of the response.
 func (r Response) MaxWriteSize() uint32 {
-	return binary.LittleEndian.Uint32(r[36:40])
+	return smbtype.Uint32(r[36:40])
 }
 
 // SetMaxWriteSize sets the maximum write size of the response.
 func (r Response) SetMaxWriteSize(flags uint32) {
-	binary.LittleEndian.PutUint32(r[36:40], flags)
+	smbtype.PutUint32(r[36:40], flags)
 }
 
 // SystemTime returns the system time of the response.
@@ -170,25 +169,25 @@ func (r Response) SetServerStartTime(t time.Time) {
 // SecurityBufferOffset returns the offset of the security buffer within the
 // response.
 func (r Response) SecurityBufferOffset() uint16 {
-	return binary.LittleEndian.Uint16(r[56:58])
+	return smbtype.Uint16(r[56:58])
 }
 
 // SetSecurityBufferOffset sets the offset of the security buffer within the
 // response.
 func (r Response) SetSecurityBufferOffset(offset uint16) {
-	binary.LittleEndian.PutUint16(r[56:58], offset)
+	smbtype.PutUint16(r[56:58], offset)
 }
 
 // SecurityBufferLength returns the length of the security buffer within the
 // response.
 func (r Response) SecurityBufferLength() uint16 {
-	return binary.LittleEndian.Uint16(r[58:60])
+	return smbtype.Uint16(r[58:60])
 }
 
 // SetSecurityBufferLength sets the length of the security buffer within the
 // response.
 func (r Response) SetSecurityBufferLength(length uint16) {
-	binary.LittleEndian.PutUint16(r[58:60], length)
+	smbtype.PutUint16(r[58:60], length)
 }
 
 // SecurityBuffer returns the bytes of the security buffer from the response.
@@ -204,7 +203,7 @@ func (r Response) SecurityBuffer() []byte {
 //
 // This field is only valid in the SMB 3.1.1 dialect.
 func (r Response) ContextOffset() uint32 {
-	return binary.LittleEndian.Uint32(r[60:64])
+	return smbtype.Uint32(r[60:64])
 }
 
 // SetContextOffset sets the offset of the first negotiate context
@@ -212,7 +211,7 @@ func (r Response) ContextOffset() uint32 {
 //
 // This field is only valid in the SMB 3.1.1 dialect.
 func (r Response) SetContextOffset(size uint32) {
-	binary.LittleEndian.PutUint32(r[60:64], size)
+	smbtype.PutUint32(r[60:64], size)
 }
 
 // ContextList returns the negotiation context list from the response.

@@ -1,7 +1,7 @@
 package smbmultiproto
 
 import (
-	"encoding/binary"
+	"github.com/gentlemanautomaton/smb/smbtype"
 )
 
 // negotiate interprets a slice of bytes as an SMB multi-protocol negotiate
@@ -26,7 +26,7 @@ func (n negotiate) Dialects() []string {
 	}
 
 	// Negotiate packets must have at least two bytes of dialect data
-	length := binary.LittleEndian.Uint16(n[1:3])
+	length := smbtype.Uint16(n[1:3])
 	if length < 2 {
 		return nil
 	}

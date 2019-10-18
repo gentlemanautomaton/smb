@@ -1,7 +1,7 @@
 package smbintegrity
 
 import (
-	"encoding/binary"
+	"github.com/gentlemanautomaton/smb/smbtype"
 )
 
 // Capabilities interprets a slice of bytes as a set of preauthentication
@@ -13,25 +13,25 @@ type Capabilities []byte
 // AlgorithmCount returns the number of supported preauthentication hash
 // algorithms.
 func (c Capabilities) AlgorithmCount() uint16 {
-	return binary.LittleEndian.Uint16(c[0:2])
+	return smbtype.Uint16(c[0:2])
 }
 
 // SetAlgorithmCount sets the number of supported preauthentication hash
 // algorithms.
 func (c Capabilities) SetAlgorithmCount(count uint16) {
-	binary.LittleEndian.PutUint16(c[0:2], count)
+	smbtype.PutUint16(c[0:2], count)
 }
 
 // SaltLength returns the length of the salt used for preauthentication
 // integrity.
 func (c Capabilities) SaltLength() uint16 {
-	return binary.LittleEndian.Uint16(c[2:4])
+	return smbtype.Uint16(c[2:4])
 }
 
 // SetSaltLength sets the length of the salt used for preauthentication
 // integrity.
 func (c Capabilities) SetSaltLength(length uint16) {
-	binary.LittleEndian.PutUint16(c[2:4], length)
+	smbtype.PutUint16(c[2:4], length)
 }
 
 // Algorithms returns the list of supported preauthentication hash algorithms.

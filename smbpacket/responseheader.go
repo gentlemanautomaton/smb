@@ -1,9 +1,8 @@
 package smbpacket
 
 import (
-	"encoding/binary"
-
 	"github.com/gentlemanautomaton/smb/smbcommand"
+	"github.com/gentlemanautomaton/smb/smbtype"
 )
 
 // ResponseHeader interprets a slice of bytes as an SMB response packet
@@ -38,12 +37,12 @@ func (h ResponseHeader) SetProtocol(p Protocol) {
 
 // Size returns the structure size of the header.
 func (h ResponseHeader) Size() uint16 {
-	return binary.LittleEndian.Uint16(h[4:6])
+	return smbtype.Uint16(h[4:6])
 }
 
 // SetSize sets the structure size of the header.
 func (h ResponseHeader) SetSize(size uint16) {
-	binary.LittleEndian.PutUint16(h[4:6], size)
+	smbtype.PutUint16(h[4:6], size)
 }
 
 // CreditCharge returns the credit charge of the response. This represents
@@ -52,7 +51,7 @@ func (h ResponseHeader) SetSize(size uint16) {
 // This field is not valid in the SMB 2.0.2 dialect. It is valid in all other
 // dialects.
 func (h ResponseHeader) CreditCharge() uint16 {
-	return binary.LittleEndian.Uint16(h[6:8])
+	return smbtype.Uint16(h[6:8])
 }
 
 // SetCreditCharge sets the credit charge of the response. This represents
@@ -61,109 +60,109 @@ func (h ResponseHeader) CreditCharge() uint16 {
 // This field is not valid in the SMB 2.0.2 dialect. It is valid in all other
 // dialects.
 func (h ResponseHeader) SetCreditCharge(charge uint16) {
-	binary.LittleEndian.PutUint16(h[6:8], charge)
+	smbtype.PutUint16(h[6:8], charge)
 }
 
 // Status returns the status from the response. It indicates the success or
 // failure of the command.
 func (h ResponseHeader) Status() uint32 {
-	return binary.LittleEndian.Uint32(h[8:12])
+	return smbtype.Uint32(h[8:12])
 }
 
 // SetStatus sets the status of the response. It indicates the success or
 // failure of the command.
 func (h ResponseHeader) SetStatus(status uint32) {
-	binary.LittleEndian.PutUint32(h[8:12], status)
+	smbtype.PutUint32(h[8:12], status)
 }
 
 // Command returns the command code of the response.
 func (h ResponseHeader) Command() smbcommand.Code {
-	return smbcommand.Code(binary.LittleEndian.Uint16(h[12:14]))
+	return smbcommand.Code(smbtype.Uint16(h[12:14]))
 }
 
 // SetCommand sets the command code of the response.
 func (h ResponseHeader) SetCommand(command smbcommand.Code) {
-	binary.LittleEndian.PutUint16(h[12:14], uint16(command))
+	smbtype.PutUint16(h[12:14], uint16(command))
 }
 
 // CreditResponse returns the number of credits granted in the response.
 func (h ResponseHeader) CreditResponse() uint16 {
-	return binary.LittleEndian.Uint16(h[14:16])
+	return smbtype.Uint16(h[14:16])
 }
 
 // SetCreditResponse sets the number of credits granted in the response.
 func (h ResponseHeader) SetCreditResponse(credits uint16) {
-	binary.LittleEndian.PutUint16(h[14:16], credits)
+	smbtype.PutUint16(h[14:16], credits)
 }
 
 // Flags returns the processing flags for the response.
 func (h ResponseHeader) Flags() Flags {
-	return Flags(binary.LittleEndian.Uint32(h[16:20]))
+	return Flags(smbtype.Uint32(h[16:20]))
 }
 
 // SetFlags sets the processing flags for the response.
 func (h ResponseHeader) SetFlags(f Flags) {
-	binary.LittleEndian.PutUint32(h[16:20], uint32(f))
+	smbtype.PutUint32(h[16:20], uint32(f))
 }
 
 // NextCommand returns the byte offset of the next response in the message, if
 // there is one. It returns zero if there are no more responses. The offset is
 // relative to the start of h.
 func (h ResponseHeader) NextCommand() uint32 {
-	return binary.LittleEndian.Uint32(h[20:24])
+	return smbtype.Uint32(h[20:24])
 }
 
 // SetNextCommand sets the byte offset of the next response in the message.
 func (h ResponseHeader) SetNextCommand(offset uint32) {
-	binary.LittleEndian.PutUint32(h[20:24], offset)
+	smbtype.PutUint32(h[20:24], offset)
 }
 
 // MessageID returns the message ID of the response.
 func (h ResponseHeader) MessageID() uint64 {
-	return binary.LittleEndian.Uint64(h[24:32])
+	return smbtype.Uint64(h[24:32])
 }
 
 // SetMessageID sets the message ID of the response.
 func (h ResponseHeader) SetMessageID(message uint64) {
-	binary.LittleEndian.PutUint64(h[24:32], message)
+	smbtype.PutUint64(h[24:32], message)
 }
 
 // TreeID returns the tree ID of the response.
 //
 // This field is only valid for synchronous responses.
 func (h ResponseHeader) TreeID() uint32 {
-	return binary.LittleEndian.Uint32(h[36:40])
+	return smbtype.Uint32(h[36:40])
 }
 
 // SetTreeID sets the tree ID of the response.
 //
 // This field is only valid for synchronous responses.
 func (h ResponseHeader) SetTreeID(tree uint32) {
-	binary.LittleEndian.PutUint32(h[36:40], tree)
+	smbtype.PutUint32(h[36:40], tree)
 }
 
 // AsyncID returns the asynchronous ID of the response.
 //
 // This field is only valid for asynchronous responses.
 func (h ResponseHeader) AsyncID() uint64 {
-	return binary.LittleEndian.Uint64(h[32:40])
+	return smbtype.Uint64(h[32:40])
 }
 
 // SetAsyncID sets the asynchronous ID of the response.
 //
 // This field is only valid for asynchronous responses.
 func (h ResponseHeader) SetAsyncID(async uint64) {
-	binary.LittleEndian.PutUint64(h[32:40], async)
+	smbtype.PutUint64(h[32:40], async)
 }
 
 // SessionID returns the session ID of the response.
 func (h ResponseHeader) SessionID() uint64 {
-	return binary.LittleEndian.Uint64(h[40:48])
+	return smbtype.Uint64(h[40:48])
 }
 
 // SetSessionID sets the session ID of the response.
 func (h ResponseHeader) SetSessionID(tree uint32) {
-	binary.LittleEndian.PutUint32(h[40:48], tree)
+	smbtype.PutUint32(h[40:48], tree)
 }
 
 // Signature returns the cryptographic signature of the response.

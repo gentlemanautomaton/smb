@@ -1,7 +1,6 @@
 package smbtype
 
 import (
-	"encoding/binary"
 	"time"
 )
 
@@ -11,8 +10,8 @@ import (
 // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/2c57429b-fdd4-488f-b5fc-9e4cf020fcdf
 func Time(v []byte) time.Time {
 	// Combine the low and high 32-bit values into a single 64-bit value
-	low := binary.LittleEndian.Uint32(v[0:4])
-	high := binary.LittleEndian.Uint32(v[4:8])
+	low := Uint32(v[0:4])
+	high := Uint32(v[4:8])
 	nsec := int64(high)<<32 | int64(low)
 
 	// Convert the epoch:
@@ -43,6 +42,6 @@ func PutTime(v []byte, t time.Time) {
 	nsec += 116444736000000000
 
 	// Write the 64-bit value as low and high 32-bit values
-	binary.LittleEndian.PutUint32(v[0:4], uint32(nsec))
-	binary.LittleEndian.PutUint32(v[4:8], uint32(nsec>>32))
+	PutUint32(v[0:4], uint32(nsec))
+	PutUint32(v[4:8], uint32(nsec>>32))
 }

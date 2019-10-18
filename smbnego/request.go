@@ -1,12 +1,11 @@
 package smbnego
 
 import (
-	"encoding/binary"
-
 	"github.com/gentlemanautomaton/smb/smbcap"
 	"github.com/gentlemanautomaton/smb/smbdialect"
 	"github.com/gentlemanautomaton/smb/smbid"
 	"github.com/gentlemanautomaton/smb/smbsecmode"
+	"github.com/gentlemanautomaton/smb/smbtype"
 )
 
 // Request interprets a slice of bytes as an SMB negotiation request packet.
@@ -64,42 +63,42 @@ func (r Request) Valid() bool {
 // requires that this be 36, regardless of the number of dialects or
 // negotiation contexts.
 func (r Request) Size() uint16 {
-	return binary.LittleEndian.Uint16(r[0:2])
+	return smbtype.Uint16(r[0:2])
 }
 
 // SetSize sets the structure size of the request.
 func (r Request) SetSize(size uint16) {
-	binary.LittleEndian.PutUint16(r[0:2], size)
+	smbtype.PutUint16(r[0:2], size)
 }
 
 // DialectCount returns the dialect count of the request.
 func (r Request) DialectCount() uint16 {
-	return binary.LittleEndian.Uint16(r[2:4])
+	return smbtype.Uint16(r[2:4])
 }
 
 // SetDialectCount sets the dialect count of the request.
 func (r Request) SetDialectCount(count uint16) {
-	binary.LittleEndian.PutUint16(r[2:4], count)
+	smbtype.PutUint16(r[2:4], count)
 }
 
 // SecurityMode returns the security mode of the request.
 func (r Request) SecurityMode() smbsecmode.Flags {
-	return smbsecmode.Flags(binary.LittleEndian.Uint16(r[4:6]))
+	return smbsecmode.Flags(smbtype.Uint16(r[4:6]))
 }
 
 // SetSecurityMode sets the security mode of the request.
 func (r Request) SetSecurityMode(flags smbsecmode.Flags) {
-	binary.LittleEndian.PutUint16(r[4:6], uint16(flags))
+	smbtype.PutUint16(r[4:6], uint16(flags))
 }
 
 // Capabilities returns the capability flags of the request.
 func (r Request) Capabilities() smbcap.Flags {
-	return smbcap.Flags(binary.LittleEndian.Uint32(r[8:12]))
+	return smbcap.Flags(smbtype.Uint32(r[8:12]))
 }
 
 // SetCapabilities sets the capability flags of the request.
 func (r Request) SetCapabilities(flags smbcap.Flags) {
-	binary.LittleEndian.PutUint32(r[8:12], uint32(flags))
+	smbtype.PutUint32(r[8:12], uint32(flags))
 }
 
 // ClientID returns the client identifier of the request.
@@ -118,7 +117,7 @@ func (r Request) SetClientID(id smbid.ID) {
 //
 // This field is only valid in the SMB 3.1.1 dialect.
 func (r Request) ContextOffset() uint32 {
-	return binary.LittleEndian.Uint32(r[28:32])
+	return smbtype.Uint32(r[28:32])
 }
 
 // SetContextOffset sets the offset of the first negotiation context in the
@@ -126,21 +125,21 @@ func (r Request) ContextOffset() uint32 {
 //
 // This field is only valid in the SMB 3.1.1 dialect.
 func (r Request) SetContextOffset(size uint32) {
-	binary.LittleEndian.PutUint32(r[28:32], size)
+	smbtype.PutUint32(r[28:32], size)
 }
 
 // ContextCount returns the negotiation context count of the request.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
 func (r Request) ContextCount() uint16 {
-	return binary.LittleEndian.Uint16(r[32:34])
+	return smbtype.Uint16(r[32:34])
 }
 
 // SetContextCount sets the negotiation context count of the request.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
 func (r Request) SetContextCount(count uint16) {
-	binary.LittleEndian.PutUint16(r[32:34], count)
+	smbtype.PutUint16(r[32:34], count)
 }
 
 // Dialects returns the dialect list from the request.

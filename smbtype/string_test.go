@@ -1,7 +1,6 @@
 package smbtype_test
 
 import (
-	"encoding/binary"
 	"strconv"
 	"testing"
 	"unicode/utf16"
@@ -18,7 +17,7 @@ func makeStringTest(s string) stringTest {
 	points := utf16.Encode([]rune(s))
 	b := make([]byte, len(points)*2)
 	for i, point := range points {
-		binary.LittleEndian.PutUint16(b[i*2:], point)
+		smbtype.PutUint16(b[i*2:], point)
 	}
 	return stringTest{
 		String: s,
@@ -106,7 +105,7 @@ func BenchmarkString(b *testing.B) {
 func stdlibString(b []byte) string {
 	u := make([]uint16, len(b)/2)
 	for i := 0; i+1 < len(b); i += 2 {
-		u[i/2] = binary.LittleEndian.Uint16(b[i:])
+		u[i/2] = smbtype.Uint16(b[i:])
 	}
 	return string(utf16.Decode(u))
 }

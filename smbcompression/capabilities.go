@@ -1,7 +1,7 @@
 package smbcompression
 
 import (
-	"encoding/binary"
+	"github.com/gentlemanautomaton/smb/smbtype"
 )
 
 // Capabilities interprets a slice of bytes as a set of compression
@@ -12,12 +12,12 @@ type Capabilities []byte
 
 // AlgorithmCount returns the number of supported compression algorithms.
 func (c Capabilities) AlgorithmCount() uint16 {
-	return binary.LittleEndian.Uint16(c[0:2])
+	return smbtype.Uint16(c[0:2])
 }
 
 // SetAlgorithmCount sets the number of supported compression algorithms.
 func (c Capabilities) SetAlgorithmCount(count uint16) {
-	binary.LittleEndian.PutUint16(c[0:2], count)
+	smbtype.PutUint16(c[0:2], count)
 }
 
 // Algorithms returns the list of supported compression algorithms.

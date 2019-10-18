@@ -1,7 +1,7 @@
 package smbencryption
 
 import (
-	"encoding/binary"
+	"github.com/gentlemanautomaton/smb/smbtype"
 )
 
 // Capabilities interprets a slice of bytes as a set of encryption
@@ -12,12 +12,12 @@ type Capabilities []byte
 
 // CipherCount returns the number of supported encryption ciphers.
 func (c Capabilities) CipherCount() uint16 {
-	return binary.LittleEndian.Uint16(c[0:2])
+	return smbtype.Uint16(c[0:2])
 }
 
 // SetCipherCount sets the number of supported encryption ciphers.
 func (c Capabilities) SetCipherCount(count uint16) {
-	binary.LittleEndian.PutUint16(c[0:2], count)
+	smbtype.PutUint16(c[0:2], count)
 }
 
 // Ciphers returns the list of supported encryption ciphers.

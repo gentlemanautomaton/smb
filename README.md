@@ -109,7 +109,7 @@ type RequestHeader []byte
 
 // Command returns the command code of the request.
 func (h RequestHeader) Command() smbcommand.Code {
-	return smbcommand.Code(binary.LittleEndian.Uint16(h[12:14]))
+	return smbcommand.Code(smbtype.Uint16(h[12:14]))
 }
 ```
 
