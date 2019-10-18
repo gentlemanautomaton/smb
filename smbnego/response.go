@@ -10,6 +10,10 @@ import (
 	"github.com/gentlemanautomaton/smb/smbtype"
 )
 
+// ResponseSize is the number of bytes required for the fixed portion
+// an SMB negotiation response.
+const ResponseSize = 64
+
 // Response interprets a slice of bytes as an SMB negotiation response packet.
 //
 // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/63abf97c-0d09-47e2-88d6-6bfa552949a5
@@ -17,7 +21,7 @@ type Response []byte
 
 // Valid returns true if the response is valid.
 func (r Response) Valid() bool {
-	if len(r) < 64 {
+	if len(r) < ResponseSize {
 		return false
 	}
 
@@ -122,8 +126,8 @@ func (r Response) MaxTransactSize() uint32 {
 }
 
 // SetMaxTransactSize sets the maximum transaction size of the response.
-func (r Response) SetMaxTransactSize(flags uint32) {
-	smbtype.PutUint32(r[28:32], flags)
+func (r Response) SetMaxTransactSize(size uint32) {
+	smbtype.PutUint32(r[28:32], size)
 }
 
 // MaxReadSize returns the maximum read size of the response.
@@ -132,8 +136,8 @@ func (r Response) MaxReadSize() uint32 {
 }
 
 // SetMaxReadSize sets the maximum read size of the response.
-func (r Response) SetMaxReadSize(flags uint32) {
-	smbtype.PutUint32(r[32:36], flags)
+func (r Response) SetMaxReadSize(size uint32) {
+	smbtype.PutUint32(r[32:36], size)
 }
 
 // MaxWriteSize returns the maximum write size of the response.
@@ -142,8 +146,8 @@ func (r Response) MaxWriteSize() uint32 {
 }
 
 // SetMaxWriteSize sets the maximum write size of the response.
-func (r Response) SetMaxWriteSize(flags uint32) {
-	smbtype.PutUint32(r[36:40], flags)
+func (r Response) SetMaxWriteSize(size uint32) {
+	smbtype.PutUint32(r[36:40], size)
 }
 
 // SystemTime returns the system time of the response.

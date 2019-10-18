@@ -8,6 +8,10 @@ import (
 	"github.com/gentlemanautomaton/smb/smbtype"
 )
 
+// RequestSize is the number of bytes required for the fixed portion
+// an SMB negotiation request.
+const RequestSize = 36
+
 // Request interprets a slice of bytes as an SMB negotiation request packet.
 //
 // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/e14db7ff-763a-4263-8b10-0c3944f52fc5
@@ -15,7 +19,7 @@ type Request []byte
 
 // Valid returns true if the request is valid.
 func (r Request) Valid() bool {
-	if len(r) < 36 {
+	if len(r) < RequestSize {
 		return false
 	}
 
@@ -37,7 +41,7 @@ func (r Request) Valid() bool {
 	}
 
 	// The dialects must not overflow
-	if 36+int(r.DialectCount())*2 > len(r) {
+	if RequestSize+int(r.DialectCount())*2 > len(r) {
 		return false
 	}
 
@@ -144,7 +148,7 @@ func (r Request) SetContextCount(count uint16) {
 
 // Dialects returns the dialect list from the request.
 func (r Request) Dialects() smbdialect.List {
-	const start = uint(36)
+	const start = uint(RequestSize)
 	end := start + uint(r.DialectCount())*2
 	return smbdialect.List(r[start:end:end])
 }
