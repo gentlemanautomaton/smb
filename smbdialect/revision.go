@@ -30,6 +30,8 @@ func (r Revision) String() string {
 		return "SMB 2.0.2"
 	case Wildcard:
 		return "SMB 2.???"
+	case Revision(Uninitialized):
+		return "SMB INIT"
 	default:
 		return "SMB " + strconv.Itoa(r.Major()) + "." + strconv.Itoa(r.Minor()) + "." + strconv.Itoa(r.Patch())
 	}
