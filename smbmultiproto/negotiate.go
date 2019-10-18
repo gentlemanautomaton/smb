@@ -1,6 +1,7 @@
 package smbmultiproto
 
 import (
+	"github.com/gentlemanautomaton/smb/smbdialect"
 	"github.com/gentlemanautomaton/smb/smbtype"
 )
 
@@ -13,7 +14,7 @@ type negotiate []byte
 // Dialect returns any SMB2 dialects present in the negotiate request.
 // It returns nil if the request is invalid or does not contain an SMB2
 // dialect.
-func (n negotiate) Dialects() []string {
+func (n negotiate) Dialects() smbdialect.List {
 	if len(n) < 3 {
 		return nil
 	}
@@ -39,10 +40,10 @@ func (n negotiate) Dialects() []string {
 
 	// Scan the dialects for SMB2
 	var (
-		hasSMB2    = false
-		hasSMB2002 = false
-		data       = []byte(n[3:totalLength])
-		cut        = 1
+		hasWildcard = false
+		hasSMB202   = false
+		data        = []byte(n[3:totalLength])
+		cut         = 1
 	)
 	for i := range data {
 		// Validate buffer formats
@@ -62,11 +63,11 @@ func (n negotiate) Dialects() []string {
 		// Compare dialects
 		if i-cut > 0 {
 			dialect := data[cut:i]
-			if matchesDialect(dialect, dialectSMB2) {
-				hasSMB2 = true
+			if matchesDialect(dialect, smbWildcard) {
+				hasWildcard = true
 			}
-			if matchesDialect(dialect, dialectSMB2002) {
-				hasSMB2002 = true
+			if matchesDialect(dialect, smb2002) {
+				hasSMB202 = true
 			}
 		}
 
@@ -75,12 +76,12 @@ func (n negotiate) Dialects() []string {
 	}
 
 	switch {
-	case hasSMB2 && hasSMB2002:
-		return []string{dialectSMB2002, dialectSMB2}
-	case hasSMB2:
-		return []string{dialectSMB2}
-	case hasSMB2002:
-		return []string{dialectSMB2002}
+	case hasWildcard && hasSMB202:
+		return dialectBoth
+	case hasWildcard:
+		return dialectWildcard
+	case hasSMB202:
+		return dialectSMB202
 	default:
 		return nil
 	}

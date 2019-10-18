@@ -16,6 +16,12 @@ func (k List) Member(i int) Revision {
 	return Revision(smbtype.Uint16(k[i : i+2]))
 }
 
+// SetMember updates the member of the list at position i.
+func (k List) SetMember(i int, r Revision) {
+	i *= 2
+	smbtype.PutUint16(k[i:i+2], uint16(r))
+}
+
 // Contains returns true if k contains r.
 func (k List) Contains(r Revision) bool {
 	count := k.Count()
