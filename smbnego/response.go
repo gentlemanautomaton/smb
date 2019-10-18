@@ -202,6 +202,26 @@ func (r Response) SecurityBuffer() []byte {
 	return r[start:end:end]
 }
 
+// SetSecurityBuffer sets the bytes of the security buffer within the
+// response. It also updates the security buffer offset and length
+// automatically.
+//
+// If len(v) exceeds MaxSecurityBuffer the call will panic.
+//
+// If the response is too small to hold all of v the call will panic.
+func (r Response) SetSecurityBuffer(v []byte) {
+	length := len(v)
+	if length > MaxSecurityBuffer {
+		panic("smbnego: response: security buffer exceeds maximum length")
+	}
+	if len(r)-ResponseSize < length {
+		panic("smbnego: response: security buffer is too large to fit in response")
+	}
+	r.SetSecurityBufferOffset(ResponseSize)
+	r.SetSecurityBufferLength(uint16(length))
+	copy(r[ResponseSize:], v)
+}
+
 // ContextOffset returns the offset of the first negotiate context
 // within the response.
 //
