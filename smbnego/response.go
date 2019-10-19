@@ -31,7 +31,7 @@ func (r Response) Valid() bool {
 	}
 
 	// The security buffer must not overflow
-	if int(r.SecurityBufferOffset())+int(r.SecurityBufferLength()) > len(r) {
+	if int(r.SecurityBufferOffset())+int(r.SecurityBufferLength())-headerSize > len(r) {
 		return false
 	}
 
@@ -170,14 +170,14 @@ func (r Response) SetServerStartTime(t time.Time) {
 	smbtype.PutTime(r[48:56], t)
 }
 
-// SecurityBufferOffset returns the offset of the security buffer within the
-// response.
+// SecurityBufferOffset returns the offset of the security buffer in bytes
+// from the start of the packet header.
 func (r Response) SecurityBufferOffset() uint16 {
 	return smbtype.Uint16(r[56:58])
 }
 
-// SetSecurityBufferOffset sets the offset of the security buffer within the
-// response.
+// SetSecurityBufferOffset sets the offset of the security buffer in bytes
+// from the start of the packet header.
 func (r Response) SetSecurityBufferOffset(offset uint16) {
 	smbtype.PutUint16(r[56:58], offset)
 }
@@ -196,7 +196,7 @@ func (r Response) SetSecurityBufferLength(length uint16) {
 
 // SecurityBuffer returns the bytes of the security buffer from the response.
 func (r Response) SecurityBuffer() []byte {
-	start := uint(r.SecurityBufferOffset())
+	start := uint(r.SecurityBufferOffset()) - headerSize
 	length := uint(r.SecurityBufferLength())
 	end := start + length
 	return r[start:end:end]
@@ -217,13 +217,13 @@ func (r Response) SetSecurityBuffer(v []byte) {
 	if len(r)-ResponseSize < length {
 		panic("smbnego: response: security buffer is too large to fit in response")
 	}
-	r.SetSecurityBufferOffset(ResponseSize)
+	r.SetSecurityBufferOffset(headerSize + ResponseSize)
 	r.SetSecurityBufferLength(uint16(length))
 	copy(r[ResponseSize:], v)
 }
 
 // ContextOffset returns the offset of the first negotiate context
-// within the response.
+// in bytes from the start of the packet header.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
 func (r Response) ContextOffset() uint32 {
@@ -231,7 +231,7 @@ func (r Response) ContextOffset() uint32 {
 }
 
 // SetContextOffset sets the offset of the first negotiate context
-// within the response.
+// in bytes from the start of the packet header.
 //
 // This field is only valid in the SMB 3.1.1 dialect.
 func (r Response) SetContextOffset(size uint32) {
@@ -244,5 +244,6 @@ func (r Response) SetContextOffset(size uint32) {
 //
 // This field is only valid in the SMB 3.1.1 dialect.
 func (r Response) ContextList() ContextList {
-	return ContextList(r[r.ContextOffset():])
+	start := uint(r.ContextOffset()) - headerSize
+	return ContextList(r[start:])
 }
