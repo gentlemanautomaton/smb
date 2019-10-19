@@ -14,6 +14,11 @@ func Time(v []byte) time.Time {
 	high := Uint32(v[4:8])
 	nsec := int64(high)<<32 | int64(low)
 
+	// Sepcial handling for zeroed time
+	if nsec == 0 {
+		return time.Time{}
+	}
+
 	// Convert the epoch:
 	// 100 ns intervals since 00:00:00 UTC, January 1, 1601
 	// 100 ns intervals since 00:00:00 UTC, January 1, 1970
@@ -30,6 +35,12 @@ func Time(v []byte) time.Time {
 //
 // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/2c57429b-fdd4-488f-b5fc-9e4cf020fcdf
 func PutTime(v []byte, t time.Time) {
+	// Sepcial handling for zeroed time
+	if t.IsZero() {
+		v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7] = 0, 0, 0, 0, 0, 0, 0, 0
+		return
+	}
+
 	// Convert to nanoseconds
 	nsec := t.UnixNano()
 
