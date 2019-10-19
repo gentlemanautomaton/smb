@@ -1,7 +1,6 @@
 package smbtcp
 
 import (
-	"errors"
 	"io"
 	"net"
 
@@ -26,6 +25,21 @@ func (c Conn) MaxLength() int {
 	return MaxLength
 }
 
+// Create returns a new message of the requested length.
+func (c Conn) Create(length int) smb.Message {
+	return c.msgPool.Get(length)
+}
+
+// Send sends a message to the connection.
+//
+// TODO: Support deadlines and/or cancellation.
+func (c Conn) Send(msg smb.Message) error {
+	// TODO: Determine whether net.Conn.Write returns a nil error for partial
+	// writes.
+	_, err := c.nc.Write(msg.Bytes())
+	return err
+}
+
 // Receive receives a message from the connection.
 //
 // TODO: Support deadlines and/or cancellation.
@@ -44,13 +58,6 @@ func (c Conn) Receive() (smb.Message, error) {
 		return nil, err
 	}
 	return msg, nil
-}
-
-// Send sends a message to the connection.
-//
-// TODO: Support deadlines and/or cancellation.
-func (c Conn) Send(smb.Message) error {
-	return errors.New("smbtcp.Conn.Send() is not yet implemented")
 }
 
 // Close closes the connection.

@@ -2,15 +2,18 @@ package smb
 
 // Conn is an SMB connection.
 type Conn interface {
-	// Receive receives a message from the connection.
-	//
-	// TODO: Support deadlines and/or cancellation.
-	Receive() (Message, error)
+	// Create returns a new message of the requested length.
+	Create(length int) Message
 
 	// Send sends a message to the connection.
 	//
 	// TODO: Support deadlines and/or cancellation.
 	Send(Message) error
+
+	// Receive receives a message from the connection.
+	//
+	// TODO: Support deadlines and/or cancellation.
+	Receive() (Message, error)
 
 	// Close closes the connection.
 	// Any blocked Receive or Send operations will be unblocked and return
