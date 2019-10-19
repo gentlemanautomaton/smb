@@ -1,16 +1,14 @@
 package smbserver
 
-import "github.com/gentlemanautomaton/smb"
-
 // A Handler handles SMB connections.
 type Handler interface {
-	ServeSMB(smb.Conn)
+	ServeSMB(Conn)
 }
 
 // HandlerFunc is a function that can act as a Handler.
-type HandlerFunc func(c smb.Conn)
+type HandlerFunc func(c Conn)
 
 // ServeSMB handles the given SMB connection.
-func (h HandlerFunc) ServeSMB(c smb.Conn) {
+func (h HandlerFunc) ServeSMB(c Conn) {
 	h(c)
 }
