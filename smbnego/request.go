@@ -1,6 +1,9 @@
 package smbnego
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/gentlemanautomaton/smb/smbcap"
 	"github.com/gentlemanautomaton/smb/smbdialect"
 	"github.com/gentlemanautomaton/smb/smbid"
@@ -160,4 +163,21 @@ func (r Request) Dialects() smbdialect.List {
 // This field is only valid in the SMB 3.1.1 dialect.
 func (r Request) ContextList() ContextList {
 	return ContextList(r[r.ContextOffset():])
+}
+
+// Summary returns a multi-line string representation of the request.
+func (r Request) Summary() string {
+	var lines []string
+	lines = append(lines, "----Negotiate Request---")
+	lines = append(lines, "  Size: "+strconv.Itoa(int(r.Size())))
+	lines = append(lines, "  Dialect Count: "+strconv.Itoa(int(r.DialectCount())))
+	lines = append(lines, "  Security Mode: "+r.SecurityMode().String())
+	lines = append(lines, "  Capabilities: "+r.Capabilities().String())
+	lines = append(lines, "  Client ID: "+r.ClientID().String())
+	dialects := r.Dialects()
+	for i := 0; i < dialects.Count(); i++ {
+		lines = append(lines, "  Dialect: "+dialects.Member(i).String())
+	}
+	lines = append(lines, "-------")
+	return strings.Join(lines, "\n")
 }

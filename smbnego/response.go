@@ -1,6 +1,8 @@
 package smbnego
 
 import (
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gentlemanautomaton/smb/smbcap"
@@ -246,4 +248,24 @@ func (r Response) SetContextOffset(size uint32) {
 func (r Response) ContextList() ContextList {
 	start := uint(r.ContextOffset()) - headerSize
 	return ContextList(r[start:])
+}
+
+// Summary returns a multi-line string representation of the response.
+func (r Response) Summary() string {
+	var lines []string
+	lines = append(lines, "----Negotiate Response---")
+	lines = append(lines, "  Size: "+strconv.Itoa(int(r.Size())))
+	lines = append(lines, "  Security Mode: "+r.SecurityMode().String())
+	lines = append(lines, "  Dialect Revision: "+r.DialectRevision().String())
+	lines = append(lines, "  Server ID: "+r.ServerID().String())
+	lines = append(lines, "  Capabilities: "+r.Capabilities().String())
+	lines = append(lines, "  MaxTransactSize: "+strconv.Itoa(int(r.MaxTransactSize())))
+	lines = append(lines, "  MaxReadSize: "+strconv.Itoa(int(r.MaxReadSize())))
+	lines = append(lines, "  MaxWriteSize: "+strconv.Itoa(int(r.MaxWriteSize())))
+	lines = append(lines, "  System Time: "+r.SystemTime().String())
+	lines = append(lines, "  Server Start Time: "+r.ServerStartTime().String())
+	lines = append(lines, "  Security Buffer Offset: "+strconv.Itoa(int(r.SecurityBufferOffset())))
+	lines = append(lines, "  Security Buffer Length: "+strconv.Itoa(int(r.SecurityBufferLength())))
+	lines = append(lines, "-------")
+	return strings.Join(lines, "\n")
 }
