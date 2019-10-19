@@ -3,15 +3,17 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 	"syscall"
-
-	"github.com/gentlemanautomaton/smb/smbcommand"
+	"time"
 
 	"github.com/gentlemanautomaton/signaler"
-	"github.com/gentlemanautomaton/smb"
+	"github.com/gentlemanautomaton/smb/smbcommand"
+	"github.com/gentlemanautomaton/smb/smbdialect"
+	"github.com/gentlemanautomaton/smb/smbid"
 	"github.com/gentlemanautomaton/smb/smbmultiproto"
 	"github.com/gentlemanautomaton/smb/smbpacket"
+	"github.com/gentlemanautomaton/smb/smbproto"
+	"github.com/gentlemanautomaton/smb/smbsecmode"
 	"github.com/gentlemanautomaton/smb/smbserver"
 	"github.com/gentlemanautomaton/smb/smbtcp"
 )
@@ -28,9 +30,17 @@ func main() {
 	}
 	defer listener.Close()
 
-	smbserver.Serve(listener, smbserver.HandlerFunc(func(conn smb.Conn) {
+	id, err := smbid.New()
+	if err != nil {
+		fmt.Printf("Failed to generate server ID: %v\n", err)
+		os.Exit(2)
+	}
+
+	smbserver.Serve(listener, id, smbserver.HandlerFunc(func(conn smbserver.Conn) {
 		remote := conn.RemoteAddr()
-		negotiated := false
+		if err != nil {
+			panic(err)
+		}
 		for {
 			if shutdown.Signaled() {
 				return
@@ -42,52 +52,93 @@ func main() {
 				return
 			}
 
-			if !negotiated {
-				negotiated = negotiate(remote, msg)
-			} else {
-				process(remote, msg)
-			}
+			ok := func() bool {
+				defer msg.Close()
 
-			msg.Close()
+				b := msg.Bytes()
+				request := smbpacket.Request(msg.Bytes())
+				hdr := request.Header()
+				if !hdr.Valid() {
+					if conn.Dialect.Ready() {
+						fmt.Printf("Conn %s: Received request with invalid header (%d bytes)\n", remote, msg.Length())
+						return false
+					}
+
+					// SMB Multi-Protocol Negotation
+					request := smbmultiproto.Request(b)
+					if !request.Valid() {
+						fmt.Printf("Conn %s: Received request with invalid header (%d bytes)\n", remote, msg.Length())
+						return false
+					}
+
+					dialects := request.Dialects()
+					var next smbdialect.State
+					switch {
+					case dialects.Contains(smbdialect.Wildcard):
+						next = smbdialect.Wildcard
+						conn.SupportMultiCredit = true
+					case dialects.Contains(smbdialect.SMB202):
+						next = smbdialect.SMB202
+					default:
+						return false
+					}
+
+					if !conn.Dialect.CanTransition(next) {
+						return false
+					}
+
+					fmt.Printf("Conn %s: Received SMB multi-protocol negotiate request for %s (%d bytes)\n", remote, next, msg.Length())
+
+					conn.Dialect = next
+
+					conn.MaxTransactSize = 8388608
+					conn.MaxReadSize = 8388608
+					conn.MaxWriteSize = 8388608
+
+					conn.Expand(1)
+					conn.Marshal(0, 1, smbproto.NegotiateResponse{
+						SecMode:         smbsecmode.SigningEnabled,
+						Dialect:         conn.Dialect.Revision(),
+						Server:          conn.Server,
+						MaxTransactSize: conn.MaxTransactSize,
+						MaxReadSize:     conn.MaxReadSize,
+						MaxWriteSize:    conn.MaxWriteSize,
+						SystemTime:      time.Now(),
+					})
+					return true
+				}
+
+				fmt.Printf("Conn %s: Received SMB2 %s (%d bytes)\n", remote, hdr.Command(), msg.Length())
+
+				if !conn.Dialect.Ready() {
+					if hdr.Command() == smbcommand.Negotiate {
+						// TODO: Send SMB2 Negotiate Response
+						//return true
+						return false
+					}
+
+					return false
+				}
+
+				//handle(request, hdr)
+				return false
+			}()
+			if !ok {
+				fmt.Printf("Conn %s: Server initiated connection close.\n", remote)
+				return
+			}
 		}
 	}))
 }
 
-func negotiate(remote smb.Addr, msg smb.Message) bool {
-	b := msg.Bytes()
-
-	// SMB Multi-Protocol Negotation
-	{
-		dialects := smbmultiproto.Request(b).Dialects()
-		if len(dialects) > 0 {
-			fmt.Printf("Conn %s: Received SMB multi-protocol negotiate request for [%s] (%d bytes)\n", remote, strings.Join(dialects, ", "), msg.Length())
-			// TODO: Send SMB2 Negotiate Response
-			return true
-		}
-	}
-
-	// SMB2 Protocol Negotation
-	{
-		request := smbpacket.Request(msg.Bytes())
-		hdr := request.Header()
-		if hdr.Valid() {
-			if hdr.Command() == smbcommand.Negotiate {
-				fmt.Printf("Conn %s: Received SMB2 negotiate request (%d bytes)\n", remote, msg.Length())
-				// TODO: Send SMB2 Negotiate Response
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-func process(remote smb.Addr, msg smb.Message) {
-	request := smbpacket.Request(msg.Bytes())
-	hdr := request.Header()
-	if !hdr.Valid() {
-		fmt.Printf("Conn %s: Received request with invalid header (%d bytes)\n", remote, msg.Length())
+func handle(request smbpacket.Request, hdr smbpacket.RequestHeader) {
+	switch hdr.Command() {
+	case smbcommand.Create:
+		// TODO: Handle create
+		return
+	case smbcommand.Cancel:
+		// TODO: Handle cancel
 		return
 	}
-	fmt.Printf("Conn %s: Received %s request (%d bytes)\n", remote, hdr.Command(), msg.Length())
+	// TODO: Handle invalid or unexpected request
 }
